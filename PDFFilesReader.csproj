@@ -7,15 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-<<<<<<< HEAD
     <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.28" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
-=======
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.28" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
->>>>>>> 2a63af4 (PDF)
   </ItemGroup>
 
 </Project>

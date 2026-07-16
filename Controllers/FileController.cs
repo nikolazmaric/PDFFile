@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using Microsoft.AspNetCore.Mvc;
 using PDFFileReader.Models;
 using PDFFileReader.Services;
@@ -45,7 +44,7 @@ public class pdfController : ControllerBase
         }
     }
     [HttpPost("extract-text")]
-    public async Task< ActionResult<TextExtract>> ExtractPdf(IFormFile dokument, CancellationToken cancellationToken=default)
+    public async Task<ActionResult<TextExtract>> ExtractPdf(IFormFile dokument, CancellationToken cancellationToken = default)
     {
         if (dokument == null || dokument.Length == 0)
             return BadRequest("Datoteka nije pronadjena.");
@@ -55,7 +54,7 @@ public class pdfController : ControllerBase
         if (dokument.Length > (7 * 1024 * 1024))
             return BadRequest("Datoteka je prevelika.");
         VrstaFajla provjera = new VrstaFajla();
-        bool isPDF=provjera.FileType(dokument);
+        bool isPDF = provjera.FileType(dokument);
         if (isPDF)
         {
             try
@@ -76,38 +75,5 @@ public class pdfController : ControllerBase
             string response = await _ocrService.ExtractTextAsync(stream, cancellationToken);
             return Ok(response);
         }
-=======
-using PDFFileReader.Models;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
-
-namespace PDFFileReader.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class PodaciController : ControllerBase
-{
-    [HttpPost("upload")]
-    public ActionResult<Dokument> UploadPdf(IFormFile dokument)
-    {
-        var ext = Path.GetExtension(dokument.FileName);
-        if (dokument == null || dokument.Length == 0)
-            return BadRequest("Datoteka nije pronadjena.");
-
-        if (dokument.ContentType != "application/pdf")
-          return BadRequest("Datoteka nije PDF.");
-        if (!string.Equals(ext,".pdf",StringComparison.OrdinalIgnoreCase))
-            return BadRequest("Datoteka nije PDF.");
-        var response = new Dokument
-        {
-            FileName = dokument.FileName,
-            FileSize = dokument.Length,
-            FileType = ext,
-            ReceivedAt = DateTime.UtcNow,
-        };
-
-        return Ok(response);
->>>>>>> 2a63af4 (PDF)
     }
 }
