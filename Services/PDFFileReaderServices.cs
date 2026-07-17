@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UglyToad.PdfPig;
 using Azure.AI.DocumentIntelligence;
+using TextNormalization.Services;
 
 namespace PDFFileReader.Services;
 
@@ -81,10 +82,13 @@ public class PDFServisi
             string tekstStrane = page.Text;
             tekst += tekstStrane;
         }
+        TextNormal temp = new TextNormal();
+        tekst = temp.TextNorm(tekst);
         var response = new TextExtract
         {
             PageNumber = file.NumberOfPages,
-            Text = tekst
+            Text = tekst,
+            OcrUsage = "OCR not used."
         };
         return response;
     }

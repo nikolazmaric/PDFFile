@@ -4,6 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Azure;
 using System.Threading;
+using System.Text;
+using TextNormalization.Services;
+using PDFFileReader.Models;
 
 namespace Ocr.Services;
 
@@ -27,16 +30,17 @@ public class OcrServisi
 
         var result = operation.Value;
 
-        string text = "";
+        var text = new StringBuilder();
 
         foreach (var page in result.Pages)
         {
             foreach (var line in page.Lines)
             {
-                text += line.Content + "\n";
+                text.AppendLine(line.Content);
             }
         }
-
-        return text;
+        TextNormal temp = new TextNormal();
+        string cleanedText = temp.TextNorm(text.ToString());
+        return cleanedText;
     }
 }

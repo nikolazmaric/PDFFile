@@ -16,12 +16,6 @@ namespace PDFFileReader.Controllers;
 public class pdfController : ControllerBase
 {
     int MaxSize = 7 * 1024 * 1024;
-    private readonly OcrServisi _ocrService;
-    public pdfController(OcrServisi ocrService)
-    {
-        _ocrService = ocrService;
-    }
-
     [HttpPost("upload")]
     public ActionResult<Dokument> UploadPdf(IFormFile dokument)
     {
@@ -41,39 +35,6 @@ public class pdfController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
-        }
-    }
-    [HttpPost("extract-text")]
-    public async Task<ActionResult<TextExtract>> ExtractPdf(IFormFile dokument, CancellationToken cancellationToken = default)
-    {
-        if (dokument == null || dokument.Length == 0)
-            return BadRequest("Datoteka nije pronadjena.");
-        string ext = Path.GetExtension(dokument.FileName);
-        if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
-            return BadRequest("Datoteka nije PDF.");
-        if (dokument.Length > (7 * 1024 * 1024))
-            return BadRequest("Datoteka je prevelika.");
-        VrstaFajla provjera = new VrstaFajla();
-        bool isPDF = provjera.FileType(dokument);
-        if (isPDF)
-        {
-            try
-            {
-                PDFServisi servisi = new PDFServisi();
-                var response = servisi.GetExtract(dokument);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        else
-        {
-            using var stream = dokument.OpenReadStream();
-
-            string response = await _ocrService.ExtractTextAsync(stream, cancellationToken);
-            return Ok(response);
         }
     }
 }

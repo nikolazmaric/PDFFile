@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using Azure.AI.DocumentIntelligence;
+using DocumentType.Enum;
+using DocumentType.Keywords;
 
 namespace PDFFileReader.Models;
 
@@ -26,4 +29,11 @@ public class TextExtract
 {
     public int PageNumber { get; set; }
     public string Text { get; set; } = string.Empty;
+    public string OcrUsage {  get; set; } = string.Empty;
+}
+
+public class VrstaDokumenta
+{
+    public documentType vrDoc { get; set; }
+    public double vjerovatnocaUspjeha { get; set; } = 0;
 }
