@@ -5,6 +5,7 @@ using FileType.Services;
 using TextNormalization.Services;
 using DocumentType.Services;
 using System.Text.Json.Serialization;
+using DocumentData.Sevices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,7 @@ builder.Services.AddScoped<OcrServisi>();
 builder.Services.AddScoped<VrstaFajla>();
 builder.Services.AddScoped<TextNormal>();
 builder.Services.AddScoped<DocType>();
+builder.Services.AddScoped<DocumentDataServices>();
 
 var app = builder.Build();
 
