@@ -12,7 +12,8 @@ using Azure;
 using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Text.Json;
-
+using Azure.Core;
+using System.ClientModel.Primitives; // for ModelReaderWriter (newer SDKs)
 
 namespace DocumentData.Sevices;
 
@@ -115,30 +116,31 @@ public class DocumentDataServices
     private async Task<string> GetDocumentType(IFormFile dokument)
     {
         using var memoryStream = new MemoryStream();
-
         await dokument.CopyToAsync(memoryStream);
+        var bytes = memoryStream.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
 
-        memoryStream.Position = 0;
-
+        var content = RequestContent.Create(new
+        {
+            base64Source = base64
+        });
 
         var operation = await _client.ClassifyDocumentAsync(
             WaitUntil.Completed,
             _classificationModelID,
-            BinaryData.FromStream(memoryStream));
+            content);
 
+        using JsonDocument doc = JsonDocument.Parse(operation.GetRawResponse().Content.ToString());
 
-        var json = operation.Value.ToString();
+        var documents = doc.RootElement
+            .GetProperty("analyzeResult")
+            .GetProperty("documents");
 
+        if (documents.GetArrayLength() == 0)
+        {
+            throw new InvalidOperationException("No documents returned by classifier.");
+        }
 
-        using JsonDocument doc = JsonDocument.Parse(json);
-
-
-        var document = doc.RootElement
-            .GetProperty("documents")[0];
-
-
-        return document
-            .GetProperty("docType")
-            .GetString();
+        return documents[0].GetProperty("docType").GetString()!;
     }
 }
