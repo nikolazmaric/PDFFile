@@ -21,7 +21,8 @@ public static class DocumentKeywords
             {
                 "ponuda",
                 "offer",
-                "proposal"
+                "proposal",
+                "packing"
             }
         },
         {
@@ -48,5 +49,21 @@ public static class DocumentKeywords
                 "order"
             }
         },
+        {
+
+            documentType.CreditMemo, new List<string>
+            {
+                "dobropis",
+                "credit",
+                "note",
+                "odobrenje",
+                "memo",
+                "adjustment",
+                "ispravka",
+                "popravek",
+                "popravka",
+                "extended"
+            }
+        }
     };
 }

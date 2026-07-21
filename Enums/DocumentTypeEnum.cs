@@ -7,5 +7,6 @@ public enum documentType
     DeliveryNote,
     Contract,
     Order,
+    CreditMemo,
     UnknownType
 }
