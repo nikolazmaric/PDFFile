@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace TextNormalization.Services;
 
-public class TextNormal
+public class TextNormal: ITextNormalizationServices
 {
     public string TextNorm(string text)
     {

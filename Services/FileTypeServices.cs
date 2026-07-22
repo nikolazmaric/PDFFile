@@ -8,7 +8,7 @@ using Azure.AI.DocumentIntelligence;
 
 namespace FileType.Services;
 
-public class VrstaFajla
+public class VrstaFajla:IFileTypeServices
 {
     public bool FileType(IFormFile dokument)
     {

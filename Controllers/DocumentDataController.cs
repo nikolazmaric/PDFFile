@@ -35,8 +35,15 @@ public class DocumentDataController: ControllerBase
             return BadRequest("Datoteka nije PDF.");
         if (dokument.Length > (7 * 1024 * 1024))
             return BadRequest("Datoteka je prevelika.");
-        var result = await _documentDataService.DocumentDataExtraction(dokument, cancellationToken);
+        try
+        {
+            var result = await _documentDataService.DocumentDataExtraction(dokument, cancellationToken);
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

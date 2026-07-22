@@ -16,7 +16,7 @@ using PDFFileReader.Models;
 
 namespace DocumentType.Services;
 
-public class DocType
+public class DocType:IDocTypeServices
 {
     private readonly OcrServisi _ocrService;
 
@@ -26,38 +26,45 @@ public class DocType
     }
     public async Task<VrstaDokumenta> docType(IFormFile dokument, CancellationToken cancellationToken = default)
     {
-        var stream = dokument.OpenReadStream();
-        string text = await _ocrService.ExtractTextAsync(stream, cancellationToken);
-        TextNormal temp = new TextNormal();
-        text = temp.TextNorm(text);
-        text = text.ToLower();
-        Dictionary<documentType, int> scores = new();
-        foreach (var document in DocumentKeywords.Keywords)
+        try
         {
-            int score = 0;
-            foreach (var keyword in document.Value)
+            var stream = dokument.OpenReadStream();
+            string text = await _ocrService.ExtractTextAsync(stream, cancellationToken);
+            TextNormal temp = new TextNormal();
+            text = temp.TextNorm(text);
+            text = text.ToLower();
+            Dictionary<documentType, int> scores = new();
+            foreach (var document in DocumentKeywords.Keywords)
             {
-                if (text.Contains(keyword.ToLower()))
-                    score++;
+                int score = 0;
+                foreach (var keyword in document.Value)
+                {
+                    if (text.Contains(keyword.ToLower()))
+                        score++;
+                }
+                scores[document.Key] = score;
             }
-            scores[document.Key] = score;
-        }
-        var result = scores.OrderByDescending(x => x.Value).First();
-        var second = scores.OrderByDescending(x=> x.Value).Skip(1).First();
-        if (result.Value == 0 || result.Value==second.Value)
-        {
-            var bag = new VrstaDokumenta
+            var result = scores.OrderByDescending(x => x.Value).First();
+            var second = scores.OrderByDescending(x => x.Value).Skip(1).First();
+            if (result.Value == 0 || result.Value == second.Value)
             {
-                vrDoc = documentType.UnknownType,
-                vjerovatnocaUspjeha = 0
+                var bag = new VrstaDokumenta
+                {
+                    vrDoc = documentType.UnknownType,
+                    vjerovatnocaUspjeha = 0
+                };
+                return bag;
+            }
+            var response = new VrstaDokumenta
+            {
+                vrDoc = result.Key,
+                vjerovatnocaUspjeha = (double)result.Value / (result.Value + second.Value)
             };
-            return bag;
+            return response;
         }
-        var response = new VrstaDokumenta
+        catch (Exception ex)
         {
-            vrDoc = result.Key,
-            vjerovatnocaUspjeha = (double)result.Value / (result.Value + second.Value)
-        };
-        return response;
+            throw new Exception("Greska prilikom obrade PDF dokumenta:" + ex.Message);
+        }
     }
 }

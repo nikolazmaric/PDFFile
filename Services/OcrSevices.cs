@@ -10,7 +10,7 @@ using PDFFileReader.Models;
 
 namespace Ocr.Services;
 
-public class OcrServisi
+public class OcrServisi: IOcrServices
 {
     private readonly DocumentIntelligenceClient _client;
     private readonly string _endpoint;
@@ -23,24 +23,31 @@ public class OcrServisi
     }
     public async Task<string> ExtractTextAsync(Stream pdfStream, CancellationToken cancellationToken = default)
     {
-        var operation = await _client.AnalyzeDocumentAsync(
-            WaitUntil.Completed,
-            "prebuilt-read",
-            BinaryData.FromStream(pdfStream), cancellationToken);
-
-        var result = operation.Value;
-
-        var text = new StringBuilder();
-
-        foreach (var page in result.Pages)
+        try
         {
-            foreach (var line in page.Lines)
+            var operation = await _client.AnalyzeDocumentAsync(
+                WaitUntil.Completed,
+                "prebuilt-read",
+                BinaryData.FromStream(pdfStream), cancellationToken);
+
+            var result = operation.Value;
+
+            var text = new StringBuilder();
+
+            foreach (var page in result.Pages)
             {
-                text.AppendLine(line.Content);
+                foreach (var line in page.Lines)
+                {
+                    text.AppendLine(line.Content);
+                }
             }
+            TextNormal temp = new TextNormal();
+            string cleanedText = temp.TextNorm(text.ToString());
+            return cleanedText;
         }
-        TextNormal temp = new TextNormal();
-        string cleanedText = temp.TextNorm(text.ToString());
-        return cleanedText;
+        catch (Exception ex)
+        {
+            throw new Exception("Greska prilikom obrade PDF dokumenta:" + ex.Message);
+        }
     }
 }

@@ -9,7 +9,7 @@ using TextNormalization.Services;
 
 namespace PDFFileReader.Services;
 
-public class PDFServisi
+public class PDFServisi: IPDFFileReaderServices
 {
     public Dokument AnalyzePdf(IFormFile dokument)
     {

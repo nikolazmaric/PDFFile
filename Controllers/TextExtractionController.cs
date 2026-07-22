@@ -52,16 +52,23 @@ public class textExtractionController : ControllerBase
         }
         else
         {
-            using var stream = dokument.OpenReadStream();
-
-            string tekst = await _ocrService.ExtractTextAsync(stream, cancellationToken);
-            TextExtract response = new TextExtract()
+            try
             {
-                PageNumber = file.NumberOfPages,
-                Text = tekst,
-                OcrUsage = "OCR used."
-            };
-            return Ok(response);
+                using var stream = dokument.OpenReadStream();
+
+                string tekst = await _ocrService.ExtractTextAsync(stream, cancellationToken);
+                TextExtract response = new TextExtract()
+                {
+                    PageNumber = file.NumberOfPages,
+                    Text = tekst,
+                    OcrUsage = "OCR used."
+                };
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

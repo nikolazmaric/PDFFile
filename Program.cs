@@ -6,6 +6,7 @@ using TextNormalization.Services;
 using DocumentType.Services;
 using System.Text.Json.Serialization;
 using DocumentData.Sevices;
+using Logger;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,7 @@ builder.Services.AddScoped<VrstaFajla>();
 builder.Services.AddScoped<TextNormal>();
 builder.Services.AddScoped<DocType>();
 builder.Services.AddScoped<DocumentDataServices>();
+builder.Services.AddScoped<ILoggerService, LoggerService>();
 
 var app = builder.Build();
 

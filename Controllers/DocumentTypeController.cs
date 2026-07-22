@@ -35,11 +35,18 @@ public class DocumentTypeController : ControllerBase
             return BadRequest("Datoteka nije PDF.");
         if (dokument.Length > MaxSize)
             return BadRequest("Datoteka je prevelika.");
-        VrstaDokumenta result = await _docType.docType(
-            dokument,
-            cancellationToken);
+        try
+        {
+            VrstaDokumenta result = await _docType.docType(
+                dokument,
+                cancellationToken);
 
 
-        return Ok(result);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

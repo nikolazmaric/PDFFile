@@ -13,64 +13,82 @@ using System.Collections.Generic;
 using System.Diagnostics.SymbolStore;
 using System.Text.Json;
 using Azure.Core;
-using System.ClientModel.Primitives; // for ModelReaderWriter (newer SDKs)
+using System.ClientModel.Primitives;
+using ResultValidation.Services;
+using Microsoft.Extensions.Logging;
+using Logger;
 
 namespace DocumentData.Sevices;
 
-public class DocumentDataServices
+public class DocumentDataServices: IDocumentDataServices
 {
     private readonly DocumentIntelligenceClient _client;
     private readonly string _modelID;
     private readonly string _classificationModelID;
     private readonly DocType _docType;
-    public DocumentDataServices(IConfiguration configuration, DocType docType)
+    private readonly ILoggerService _logger;
+    public DocumentDataServices(IConfiguration configuration, DocType docType, ILoggerService logger)
     {
-        Console.WriteLine("DOCUMENT DATA SERVICE CREATED");
         var endpoint = configuration["DocumentIntelligenceCustom:Endpoint"];
         var apiKey = configuration["DocumentIntelligenceCustom:ApiKey"];
         _modelID = configuration["DocumentIntelligenceCustom:ModelID"];
         _classificationModelID = configuration["DocumentIntelligenceCustom:ClassificationModelID"];
         _client = new DocumentIntelligenceClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
         _docType = docType;
-        Console.WriteLine("Extraction model: " + _modelID);
-        Console.WriteLine("Classification model: " + _classificationModelID);
+        _logger= logger;
     }
     public async Task<documentData> DocumentDataExtraction(IFormFile dokument, CancellationToken cancellationToken = default)
     {
-        var documentType = await GetDocumentType(
-            dokument);
-        using var memoryStream = new MemoryStream();
-
-        await dokument.CopyToAsync(
-            memoryStream,
-            cancellationToken);
-
-        memoryStream.Position = 0;
-
-        var operation = await _client.AnalyzeDocumentAsync(
-            WaitUntil.Completed,
-            _modelID,
-            BinaryData.FromStream(memoryStream),
-            cancellationToken);
-
-
-        var result = operation.Value;
-
-        var document = result.Documents[0]; 
-        return new documentData
+        try
         {
-            DocumentType = documentType,
-            DocumentNumber = GetField(document, "InvoiceId"),
-            DocumentTime=GetField(document, "InvoiceDate"),
-            CustomerName = GetField(document, "CustomerName"),
-            CustomerAddress = GetField(document, "CustomerAddress"),
-            CustomerVAT = GetField(document, "CustomerTaxId"),
-            Currency = GetField(document, "Currency"),
-            Osnovica = GetField(document, "SubTotal"),
-            PDV = GetField(document, "TotalTax"),
-            FullPrize = GetField(document, "InvoiceTotal"),
-            Artikli = GetStavke(document)
-        };
+            _logger.LogInformation("Pocetak obrade dokumenta");
+            resultValidation prov = new resultValidation();
+            var documentType = await GetDocumentType(
+                dokument);
+            using var memoryStream = new MemoryStream();
+
+            await dokument.CopyToAsync(
+                memoryStream,
+                cancellationToken);
+
+            memoryStream.Position = 0;
+
+            var operation = await _client.AnalyzeDocumentAsync(
+                WaitUntil.Completed,
+                _modelID,
+                BinaryData.FromStream(memoryStream),
+                cancellationToken);
+
+
+            var result = operation.Value;
+
+            var document = result.Documents[0];
+            var data = new documentData
+            {
+                DocumentType = documentType,
+                DocumentNumber = GetField(document, "InvoiceId"),
+                DocumentTime = GetField(document, "InvoiceDate"),
+                CustomerName = GetField(document, "CustomerName"),
+                CustomerAddress = GetField(document, "CustomerAddress"),
+                CustomerVAT = GetField(document, "CustomerTaxId"),
+                Currency = GetField(document, "Currency"),
+                Osnovica = GetField(document, "SubTotal"),
+                PDV = GetField(document, "TotalTax"),
+                FullPrize = GetField(document, "InvoiceTotal"),
+                Artikli = GetStavke(document)
+            };
+            if (!prov.Validation(data))
+            {
+                _logger.LogWarning("Dokument nije prosao validaciju");
+                return null;
+            }
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Greska prilikom obrade dokumenta");
+            throw new Exception("Greska prilikom obrade PDF dokumenta:" + ex.Message);
+        }
     }
     private string? GetField(
         AnalyzedDocument document,
