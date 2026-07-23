@@ -7,6 +7,8 @@ using Ocr.Services;
 using FileType.Services;
 using UglyToad.PdfPig.Fonts;
 using System.ComponentModel;
+using Processing.Options;
+using Microsoft.Extensions.Options;
 
 namespace PDFFileReader.Controllers;
 
@@ -15,7 +17,11 @@ namespace PDFFileReader.Controllers;
 [Route("api/[controller]")]
 public class pdfController : ControllerBase
 {
-    int MaxSize = 7 * 1024 * 1024;
+    private readonly processingOptions _processingOptions;
+    public pdfController(IOptions<processingOptions> process)
+    {
+        _processingOptions = process.Value;
+    }
     [HttpPost("upload")]
     public ActionResult<Dokument> UploadPdf(IFormFile dokument)
     {
@@ -24,7 +30,8 @@ public class pdfController : ControllerBase
         string ext = Path.GetExtension(dokument.FileName);
         if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
             return BadRequest("Datoteka nije PDF.");
-        if (dokument.Length > MaxSize)
+        long maxSize = _processingOptions.MaxFileSizeMb * 1024L * 1024L;
+        if (dokument.Length > maxSize)
             return BadRequest("Datoteka je prevelika.");
         try
         {

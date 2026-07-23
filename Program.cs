@@ -7,6 +7,7 @@ using DocumentType.Services;
 using System.Text.Json.Serialization;
 using DocumentData.Sevices;
 using Logger;
+using Processing.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddScoped<TextNormal>();
 builder.Services.AddScoped<DocType>();
 builder.Services.AddScoped<DocumentDataServices>();
 builder.Services.AddScoped<ILoggerService, LoggerService>();
+builder.Services.Configure<processingOptions>(builder.Configuration.GetSection(processingOptions.SectionName));
 
 var app = builder.Build();
 

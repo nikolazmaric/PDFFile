@@ -9,6 +9,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using UglyToad.PdfPig;
+using Processing.Options;
+using Microsoft.Extensions.Options;
 
 namespace TextExtraction.Controllers;
 
@@ -17,11 +19,13 @@ namespace TextExtraction.Controllers;
 [Route("api/[controller]")]
 public class textExtractionController : ControllerBase
 {
-    int MaxSize = 7 * 1024 * 1024;
+    private readonly processingOptions _processingOptions;
     private readonly OcrServisi _ocrService;
-    public textExtractionController(OcrServisi ocrService)
+    public textExtractionController(OcrServisi ocrService,
+        IOptions<processingOptions> process)
     {
         _ocrService = ocrService;
+        _processingOptions = process.Value;
     }
     [HttpPost("extract-text")]
     public async Task<ActionResult<TextExtract>> ExtractPdf(IFormFile dokument, CancellationToken cancellationToken = default)
@@ -33,7 +37,8 @@ public class textExtractionController : ControllerBase
         string ext = Path.GetExtension(dokument.FileName);
         if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
             return BadRequest("Datoteka nije PDF.");
-        if (dokument.Length > (7 * 1024 * 1024))
+        long maxSize = _processingOptions.MaxFileSizeMb * 1024L * 1024L;
+        if (dokument.Length > maxSize)
             return BadRequest("Datoteka je prevelika.");
         VrstaFajla provjera = new VrstaFajla();
         bool isPDF = provjera.FileType(dokument);

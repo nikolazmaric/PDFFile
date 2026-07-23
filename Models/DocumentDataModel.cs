@@ -18,8 +18,6 @@ public class documentData
     public string PDV { get; set; } = string.Empty;
     public string FullPrize { get; set; }=string.Empty;
     public List<Stavke> Artikli { get; set; }
-    //public double reliability { get; set; }
-    //public string warning { get; set; }=string.Empty;
 }
 
 public class Stavke

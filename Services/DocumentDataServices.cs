@@ -80,7 +80,6 @@ public class DocumentDataServices: IDocumentDataServices
             if (!prov.Validation(data))
             {
                 _logger.LogWarning("Dokument nije prosao validaciju");
-                return null;
             }
             return data;
         }

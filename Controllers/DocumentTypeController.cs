@@ -12,6 +12,8 @@ using UglyToad.PdfPig;
 using DocumentType.Services;
 using DocumentType.Keywords;
 using DocumentType.Enum;
+using Processing.Options;
+using Microsoft.Extensions.Options;
 
 namespace DocumentType.Controllers;
 
@@ -19,11 +21,13 @@ namespace DocumentType.Controllers;
 [Route("api/[controller]")]
 public class DocumentTypeController : ControllerBase
 {
-    int MaxSize = 7 * 1024 * 1024;
+    private readonly processingOptions _processingOptions;
     private readonly DocType _docType;
-    public DocumentTypeController(DocType docType)
+    public DocumentTypeController(DocType docType,
+        IOptions<processingOptions> process)
     {
         _docType = docType;
+        _processingOptions = process.Value;
     }
     [HttpPost("document-type")]
     public async Task<ActionResult<string>> UploadPdf(IFormFile dokument, CancellationToken cancellationToken = default)
@@ -33,7 +37,8 @@ public class DocumentTypeController : ControllerBase
         string ext = Path.GetExtension(dokument.FileName);
         if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
             return BadRequest("Datoteka nije PDF.");
-        if (dokument.Length > MaxSize)
+        long maxSize = _processingOptions.MaxFileSizeMb * 1024L * 1024L;
+        if (dokument.Length > maxSize)
             return BadRequest("Datoteka je prevelika.");
         try
         {
